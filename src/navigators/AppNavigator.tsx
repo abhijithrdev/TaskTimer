@@ -1,22 +1,23 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React, { useState } from 'react'
-import LoginScreen from '../screens/LoginScreen'
-import HomeScreen from '../screens/HomeScreen'
+import { StyleSheet, Text, View } from "react-native";
+import React, { useState } from "react";
+import LoginScreen from "../screens/LoginScreen";
+import HomeScreen from "../screens/HomeScreen";
+import { getToken, TOKEN_KEYS } from "../services/tokenStorage";
 
 const AppNavigator = () => {
-     const [isLoggedIn, setIsLoggedIn] = useState(false)
-  return (
-    <View>
-      {
-        !isLoggedIn ? 
-            <LoginScreen/>
-            : 
-            <HomeScreen/>
-      }
-    </View>
-  )
-}
+  const isLoggedIn = async (): Promise<boolean> => {
+    const accessToken = await getToken(TOKEN_KEYS.ACCESS);
 
-export default AppNavigator
+    if (!accessToken) {
+      return false;
+    }
 
-const styles = StyleSheet.create({})
+    return true;
+
+  };
+  return <View>{isLoggedIn ? <LoginScreen /> : <HomeScreen />}</View>;
+};
+
+export default AppNavigator;
+
+const styles = StyleSheet.create({});
