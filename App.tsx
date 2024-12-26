@@ -1,38 +1,45 @@
-import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import AppNavigator from './src/navigators/AppNavigator';
-import { useFonts } from 'expo-font';
+import { StatusBar } from "expo-status-bar";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
+import AppNavigator from "./src/navigators/AppNavigator";
+import { NavigationContainer } from "@react-navigation/native";
+import { useEffect } from "react";
+import {
+  handleNotificationResponse,
+  initializeNotifications,
+} from "./src/services/notifications";
+import { useFonts } from "expo-font";
 
 export default function App() {
+  useEffect(() => {
+    initializeNotifications();
+    const subscription = handleNotificationResponse();
+    return () => subscription.remove();
+  }, []);
 
   const [fontsLoaded] = useFonts({
-    'Montserrat-Regular': require('./assets/fonts/Montserrat-Regular.ttf'),
-    'Montserrat-Bold': require('./assets/fonts/Montserrat-Bold.ttf'),
-    'Montserrat-Light': require('./assets/fonts/Montserrat-Light.ttf'),
-    'Montserrat-SemiBold': require('./assets/fonts/Montserrat-SemiBold.ttf')
+    "Montserrat-Regular": require("./assets/fonts/Montserrat-Regular.ttf"),
+    "Montserrat-Bold": require("./assets/fonts/Montserrat-Bold.ttf"),
+    "Montserrat-Light": require("./assets/fonts/Montserrat-Light.ttf"),
+    "Montserrat-SemiBold": require("./assets/fonts/Montserrat-SemiBold.ttf"),
   });
 
   if (!fontsLoaded) {
-    return <ActivityIndicator/>
+    return <ActivityIndicator />;
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <AppNavigator/>
-      {/* <Text style={{fontFamily: 'Montserrat'}}>Open up App.tsx to start working on your app!</Text> */}
-    </SafeAreaView>
-    // <View style={styles.container}>
-    //   <Text>Open up App.tsx to start working on your app!</Text>
-    //   <StatusBar style="auto" />
-    // </View>
+    <View style={styles.container}>
+      <NavigationContainer>
+        <AppNavigator />
+        <StatusBar style="auto" />
+      </NavigationContainer>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: '#fff',
-    // alignItems: 'center',
-    // justifyContent: 'center',
+    backgroundColor: "#F5F5F5",
   },
 });

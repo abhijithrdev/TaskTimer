@@ -1,6 +1,5 @@
 import {
   Alert,
-  Button,
   StyleSheet,
   Text,
   TextInput,
@@ -8,11 +7,16 @@ import {
   View,
 } from "react-native";
 import React, { useState } from "react";
-import { login } from "../api/authAPI";
+import { login } from "../../api/authAPI";
+import { StackScreenProps } from "@react-navigation/stack";
+import { HomeStackParamList } from "../../navigators/HomeStackNavigator";
+import { AppStackParamList } from "../../navigators/AppNavigator";
 
-const LoginScreen = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+type Props = StackScreenProps<AppStackParamList, "Login">;
+
+const LoginScreen = (props: Props) => {
+  const [username, setUsername] = useState<string | undefined>(undefined);
+  const [password, setPassword] = useState<string | undefined>(undefined);
 
   const onLoginPress = async () => {
     if (!username || !password) {
@@ -24,6 +28,8 @@ const LoginScreen = () => {
     try {
       await login({ username, password });
       Alert.alert("Success", "You are now logged in!");
+      props.navigation.navigate("Home");
+      
     } catch (error) {
       Alert.alert("Error", "Invalid username or password.");
     }
@@ -31,7 +37,6 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.innerContainer}>
         <Text style={styles.headerText}>Plan. Track. Succeed.</Text>
 
         <Text style={styles.headerTextSemibold}>
@@ -69,7 +74,7 @@ const LoginScreen = () => {
         >
           <Text style={styles.touchableText}>Log in</Text>
         </TouchableOpacity>
-      </View>
+     
     </View>
   );
 };
@@ -77,17 +82,19 @@ const LoginScreen = () => {
 export default LoginScreen;
 
 const styles = StyleSheet.create({
+  // container: {
+  //   // flex: 1,
+  //   // alignItems: "center",
+  //   // justifyContent: "center",
+  //   // backgroundColor: "#46BFAB",
+  // },
   container: {
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#46BFAB",
-  },
-  innerContainer: {
-    width: "80%",
+// flex: 1,
+// justifyContent: "center",
     backgroundColor: "#0A5045",
-    height: "90%",
     padding: 14,
     borderRadius: 20,
+    
   },
   headerText: {
     fontFamily: "Montserrat-Light",
@@ -107,7 +114,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     justifyContent: "center",
-    marginTop: 20,
+    marginTop: 60,
   },
   inputHeaderText: {
     color: "#647c76",
