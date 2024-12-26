@@ -80,7 +80,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
-    // alignItems: "center",
     backgroundColor: "#0A5045",
     padding: 14,
   },
@@ -102,7 +101,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     justifyContent: "center",
-    marginTop: 60,
+    marginTop: 100,
   },
   inputHeaderText: {
     color: "#647c76",
@@ -118,6 +117,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     height: 45,
+    marginBottom: 30
   },
   touchableOpacity: {
     backgroundColor: "#24c37e",

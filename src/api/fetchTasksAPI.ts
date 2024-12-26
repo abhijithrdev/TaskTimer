@@ -2,7 +2,7 @@ import apiClient from "./axiosClient";
 
 export interface Task {
   id: string;
-  room: { id: string; }; // Adjust this type based on your TaskRoom type
+  room: { id: string; };
   title: string;
   created_at: string;
   starts_at: string;
