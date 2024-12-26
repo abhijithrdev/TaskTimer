@@ -26,7 +26,7 @@ export const fetchTasks = async (roomId: string): Promise<Task[]> => {
   }
 };
 
-export const fetchNextTask = async (roomId: string): Promise<Task> => {
+export const fetchNewTask = async (roomId: string): Promise<Task> => {
     try {
       const response = await apiClient.get<Task>(`/api/tasks/new/${roomId}`);
       console.log("Next tasks fetched successfully:", response);

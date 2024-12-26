@@ -7,14 +7,15 @@ import {
   View,
 } from "react-native";
 import React, { useState } from "react";
-import { login } from "../../api/authAPI";
+import { loginAPI } from "../../api/authAPI";
 import { StackScreenProps } from "@react-navigation/stack";
-import { HomeStackParamList } from "../../navigators/HomeStackNavigator";
 import { AppStackParamList } from "../../navigators/AppNavigator";
+import { useAuth } from "../../services/AuthContext";
 
 type Props = StackScreenProps<AppStackParamList, "Login">;
 
 const LoginScreen = (props: Props) => {
+  const { login } = useAuth();
   const [username, setUsername] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
 
@@ -23,58 +24,52 @@ const LoginScreen = (props: Props) => {
       Alert.alert("Error", "Please fill in both fields.");
       return;
     }
-    console.log("Login pressed", username, password);
 
     try {
-      await login({ username, password });
+      await loginAPI({ username, password });
+      login();
       Alert.alert("Success", "You are now logged in!");
-      props.navigation.navigate("Home");
-      
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Invalid username or password.");
     }
   };
 
   return (
     <View style={styles.container}>
-        <Text style={styles.headerText}>Plan. Track. Succeed.</Text>
+      <Text style={styles.headerText}>Plan. Track. Succeed.</Text>
 
-        <Text style={styles.headerTextSemibold}>
-          <Text style={styles.headerLoginText}>Log in</Text> to begin.
-        </Text>
+      <Text style={styles.headerTextSemibold}>
+        <Text style={styles.headerLoginText}>Log in</Text> to begin.
+      </Text>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputHeaderText}>Username</Text>
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputHeaderText}>Username</Text>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your username"
-            value={username}
-            onChangeText={setUsername}
-            placeholderTextColor="#647c76"
-            cursorColor="#647c76"
-          />
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your username"
+          value={username}
+          onChangeText={setUsername}
+          placeholderTextColor="#647c76"
+          cursorColor="#647c76"
+        />
 
-          <Text style={styles.inputHeaderText}>Password</Text>
+        <Text style={styles.inputHeaderText}>Password</Text>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your password"
-            value={password}
-            onChangeText={setPassword}
-            placeholderTextColor="#647c76"
-            cursorColor="#647c76"
-            secureTextEntry
-          />
-        </View>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your password"
+          value={password}
+          onChangeText={setPassword}
+          placeholderTextColor="#647c76"
+          cursorColor="#647c76"
+          secureTextEntry
+        />
+      </View>
 
-        <TouchableOpacity
-          onPress={onLoginPress}
-          style={styles.touchableOpacity}
-        >
-          <Text style={styles.touchableText}>Log in</Text>
-        </TouchableOpacity>
-     
+      <TouchableOpacity onPress={onLoginPress} style={styles.touchableOpacity}>
+        <Text style={styles.touchableText}>Log in</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -82,19 +77,12 @@ const LoginScreen = (props: Props) => {
 export default LoginScreen;
 
 const styles = StyleSheet.create({
-  // container: {
-  //   // flex: 1,
-  //   // alignItems: "center",
-  //   // justifyContent: "center",
-  //   // backgroundColor: "#46BFAB",
-  // },
   container: {
-// flex: 1,
-// justifyContent: "center",
+    flex: 1,
+    justifyContent: "center",
+    // alignItems: "center",
     backgroundColor: "#0A5045",
     padding: 14,
-    borderRadius: 20,
-    
   },
   headerText: {
     fontFamily: "Montserrat-Light",

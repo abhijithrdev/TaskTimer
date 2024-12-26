@@ -1,22 +1,17 @@
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { View, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import React, { useEffect, useState } from "react";
 import { StackScreenProps } from "@react-navigation/stack";
-import { HomeStackParamList } from "../../navigators/HomeStackNavigator";
 import { scheduleLocalNotification } from "../../services/notifications";
-import { fetchNextTask, Task } from "../../api/fetchTasksAPI";
+import { fetchNewTask, Task } from "../../api/fetchTasksAPI";
+import TaskDetails from "../../components/TaskDetails";
+import TouchableButton from "../../components/TouchableButton";
+import { AppStackParamList } from "../../navigators/AppNavigator";
 
-type Props = StackScreenProps<HomeStackParamList, "Task Management">;
+type Props = StackScreenProps<AppStackParamList, "Task Management">;
 
 const TaskManagementScreen = (props: Props) => {
   const [loading, setLoading] = useState(false);
-  const initialTaskValue = {
+  const INITIAL_TASK = {
     id: "",
     room: { id: "" },
     title: "",
@@ -24,15 +19,11 @@ const TaskManagementScreen = (props: Props) => {
     starts_at: "",
     starts_in: { seconds: 0, minutes: 0, hours: 0, days: 0 },
   };
-  const [task, setTask] = useState<Task>(initialTaskValue);
+  const [task, setTask] = useState<Task>(INITIAL_TASK);
 
   useEffect(() => {
     setTask(props.route.params.taskDetails);
   }, [props.route.params.taskDetails]);
-
-  useEffect(() => {
-    console.log("task", task);
-  }, [task]);
 
   const handleNotification = () => {
     scheduleLocalNotification(task?.starts_in, task.title);
@@ -40,11 +31,8 @@ const TaskManagementScreen = (props: Props) => {
 
   const handleFetchTasks = async () => {
     setLoading(true);
-
     try {
-      const fetchedTask = await fetchNextTask(task.room.id);
-      console.log("fetchedTask", fetchedTask);
-
+      const fetchedTask = await fetchNewTask(task.room.id);
       setTask(fetchedTask);
     } catch (error) {
       Alert.alert("Error", "Failed to fetch tasks.");
@@ -54,69 +42,21 @@ const TaskManagementScreen = (props: Props) => {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: "space-between" }}>
-      <View style={{ flex: 0.9, justifyContent: "center" }}>
+    <View style={styles.container}>
+      <View style={styles.content}>
         {loading ? (
           <ActivityIndicator size={"large"} color={"#647c76"} />
         ) : (
-          <>
-            <Text
-              style={{
-                fontFamily: "Montserrat-Bold",
-                color: "#000",
-                fontSize: 28,
-                textAlign: "center",
-                paddingVertical: 30,
-              }}
-            >
-              {task.title}
-            </Text>
-            <Text
-              style={{
-                fontFamily: "Montserrat-Light",
-                color: "#647c76",
-                fontSize: 18,
-                textAlign: "center",
-                paddingBottom: 40,
-              }}
-            >
-              Starts at:{" "}
-              <Text
-                style={{
-                  color: "#000",
-                  fontFamily: "Montserrat-Regular",
-                  fontSize: 20,
-                }}
-              >
-                {new Date(task.starts_at).toLocaleString()}
-              </Text>
-            </Text>
-          </>
+          <TaskDetails task={task} />
         )}
-
-        <View style={{ marginHorizontal: 20 }}>
-          <TouchableOpacity
-            onPress={handleNotification}
-            style={[styles.touchableOpacity, { backgroundColor: "#007BFF" }]}
-          >
-            <Text style={styles.touchableText}>Schedule Notification</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableButton
+          onPress={handleNotification}
+          text="Schedule Notification"
+          style={styles.touchableBackgroundColor}
+        />
       </View>
-      <View
-        style={{
-          flex: 0.1,
-          backgroundColor: "#000",
-          padding: 20,
-          justifyContent: "center",
-        }}
-      >
-        <TouchableOpacity
-          onPress={handleFetchTasks}
-          style={styles.touchableOpacity}
-        >
-          <Text style={styles.touchableText}>Get Next Task</Text>
-        </TouchableOpacity>
+      <View style={styles.footer}>
+        <TouchableButton onPress={handleFetchTasks} text="Get Next Task" />
       </View>
     </View>
   );
@@ -125,17 +65,22 @@ const TaskManagementScreen = (props: Props) => {
 export default TaskManagementScreen;
 
 const styles = StyleSheet.create({
-  touchableOpacity: {
-    backgroundColor: "#24c37e",
-    // marginTop: 24,
-    height: 45,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
+  container: {
+    flex: 1,
+    justifyContent: "space-between",
   },
-  touchableText: {
-    fontFamily: "Montserrat-Bold",
-    color: "#FFF",
-    fontSize: 17,
+  content: {
+    flex: 0.9,
+    justifyContent: "center",
+    marginHorizontal: 20,
+  },
+  touchableBackgroundColor: {
+    backgroundColor: "#007BFF",
+  },
+  footer: {
+    flex: 0.1,
+    backgroundColor: "#000",
+    padding: 20,
+    justifyContent: "center",
   },
 });

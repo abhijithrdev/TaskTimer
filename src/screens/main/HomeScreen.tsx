@@ -2,19 +2,19 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Pressable,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { createTaskRoom } from "../../api/createTaskRoomAPI";
-import { fetchNextTask, fetchTasks, Task } from "../../api/fetchTasksAPI";
+import { fetchNewTask, fetchTasks, Task } from "../../api/fetchTasksAPI";
 import { StackScreenProps } from "@react-navigation/stack";
-import { HomeStackParamList } from "../../navigators/HomeStackNavigator";
+import TouchableButton from "../../components/TouchableButton";
+import TaskItem from "../../components/TaskItem";
+import { AppStackParamList } from "../../navigators/AppNavigator";
 
-type Props = StackScreenProps<HomeStackParamList, "Home">;
+type Props = StackScreenProps<AppStackParamList, "Home">;
 
 const HomeScreen = (props: Props) => {
   const [roomId, setRoomId] = useState<string | null>(null);
@@ -24,40 +24,22 @@ const HomeScreen = (props: Props) => {
   const handleCreateTaskRoom = async () => {
     try {
       const newRoomId = await createTaskRoom();
-      handleCreateNewTask(newRoomId);
       setRoomId(newRoomId);
+      await fetchNewTask(newRoomId);
+      handleFetchTasks(newRoomId);
       Alert.alert("Task Room Created", `Room ID: ${newRoomId}`);
-      
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Unable to create task room.");
-    }
-  };
-
-  const handleCreateNewTask = async (newRoomId: string) => {
-    if (!newRoomId) return;
-    setLoading(true);
-    console.log("create new", newRoomId);
-    try {
-      await fetchNextTask(newRoomId);
-      setTimeout(() => {
-        handleFetchTasks(newRoomId);
-      }, 1000);
-     
-    } catch (error) {
-      Alert.alert("Error", "Failed to fetch tasks.");
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleFetchTasks = async (newRoomId?: string) => {
     if (!roomId) return;
     setLoading(true);
-    console.log("3rd", newRoomId);
     try {
-      const fetchedTasks = await fetchTasks(newRoomId ? newRoomId : roomId);
+      const fetchedTasks = await fetchTasks(newRoomId || roomId);
       setTasks(fetchedTasks);
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Failed to fetch tasks.");
     } finally {
       setLoading(false);
@@ -70,157 +52,39 @@ const HomeScreen = (props: Props) => {
     }
   }, [roomId]);
 
-  const renderTasks = ({ item }: { item: Task }) => {
-    return (
-      <Pressable
-        onPress={() =>
-          props.navigation.navigate("Task Management", { taskDetails: item })
-        }
-        style={{
-          backgroundColor: "#647c76",
-          marginVertical: 5,
-          padding: 15,
-          borderRadius: 15,
-          elevation: 1,
-        }}
-      >
-        <Text
-          style={{
-            fontFamily: "Montserrat-SemiBold",
-            color: "#FFF",
-            fontSize: 15,
-          }}
-        >
-          {item.title}
-        </Text>
-        <Text
-          style={{
-            fontFamily: "Montserrat-Light",
-            color: "#F5F5F5",
-            fontSize: 12,
-            textAlign: "right",
-          }}
-        >
-          {new Date(item.starts_at).toLocaleString()}
-        </Text>
-      </Pressable>
-    );
-  };
-
-  const listEmpty = () => {
-    return (
-      <View style={{ alignItems: "center", justifyContent: "center" }}>
-        <Text
-          style={{
-            fontFamily: "Montserrat-SemiBold",
-            color: "#647c76",
-            fontSize: 15,
-            textAlign: "center",
-            marginVertical: 100,
-          }}
-        >
-          No tasks available
-        </Text>
-      </View>
-    );
-  };
-
-  const headerComponent = () => {
-    return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <Text
-          style={{
-            fontFamily: "Montserrat-SemiBold",
-            color: "#000",
-            fontSize: 18,
-            textAlign: "center",
-            marginVertical: 10,
-          }}
-        >
-          Tasks
-        </Text>
-      </View>
-    );
-  };
-
   return (
-    <View style={{ paddingTop: 50 }}>
-      <View
-        style={{
-          backgroundColor: "#0A5045",
-          paddingVertical: 30,
-          paddingTop: 50,
-        }}
-      >
-        <Text
-          style={{
-            color: "#FFF",
-            fontFamily: "Montserrat-Bold",
-            marginVertical: 50,
-            fontSize: 25,
-            textAlign: "center",
-          }}
-        >
-          Task Timer
-        </Text>
-        <View style={{ marginHorizontal: 20 }}>
-          <TouchableOpacity
-            onPress={handleCreateTaskRoom}
-            style={[styles.touchableOpacity]}
-          >
-            <Text style={styles.touchableText}>Create Task Room</Text>
-          </TouchableOpacity>
-        </View>
-
-        {roomId && (
-          <Text
-            style={{
-              color: "#647c76",
-              fontFamily: "Montserrat-SemiBold",
-              marginTop: 20,
-              fontSize: 15,
-              textAlign: "center",
-            }}
-          >
-            Task Room ID: {roomId}
-          </Text>
-        )}
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Task Timer</Text>
+        <TouchableButton
+          onPress={handleCreateTaskRoom}
+          text="Create Task Room"
+          style={{ marginHorizontal: 20 }}
+        />
+        {roomId && <Text style={styles.roomId}>Task Room ID: {roomId}</Text>}
       </View>
 
       {roomId ? (
-        <View style={{ flex: 1,marginHorizontal: 20, marginTop: 20 }}>
+        <View style={styles.taskListContainer}>
           {loading ? (
             <ActivityIndicator size={"large"} color={"#647c76"} />
           ) : (
             <FlatList
               data={tasks}
-              renderItem={renderTasks}
+              renderItem={({item}) => <TaskItem item={item} navigation={props.navigation}/>}
               keyExtractor={(item) => item.id}
               onRefresh={handleFetchTasks}
               refreshing={loading}
-              ListEmptyComponent={listEmpty}
-              ListHeaderComponent={headerComponent}
-              scrollEnabled={true}
+              ListEmptyComponent={<Text style={styles.emptyText}>No tasks available</Text>}
+              ListHeaderComponent={<Text style={styles.listHeader}>Tasks</Text>}
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ marginBottom: 0 }}
             />
           )}
         </View>
       ) : (
-        <View style={{ justifyContent: "center" }}>
-          <Text
-            style={{
-              fontFamily: "Montserrat-SemiBold",
-              color: "#647c76",
-              fontSize: 15,
-              textAlign: "center",
-              marginVertical: 200,
-              marginHorizontal: 60,
-            }}
-          >
-            Tap 'Create Task Room' to start managing your tasks.
-          </Text>
-        </View>
+        <Text style={styles.noRoomText}>
+          Tap 'Create Task Room' to start managing your tasks.
+        </Text>
       )}
     </View>
   );
@@ -229,17 +93,53 @@ const HomeScreen = (props: Props) => {
 export default HomeScreen;
 
 const styles = StyleSheet.create({
-  touchableOpacity: {
-    backgroundColor: "#24c37e",
-    marginTop: 24,
-    height: 45,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
+  container: {
+    flex: 1,
+    paddingTop: 50,
   },
-  touchableText: {
-    fontFamily: "Montserrat-Bold",
+  header: {
+    backgroundColor: "#0A5045",
+    paddingVertical: 30,
+  },
+  headerTitle: {
     color: "#FFF",
-    fontSize: 17,
+    fontFamily: "Montserrat-Bold",
+    marginVertical: 50,
+    fontSize: 25,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  roomId: {
+    color: "#647c76",
+    fontFamily: "Montserrat-SemiBold",
+    marginTop: 20,
+    fontSize: 15,
+    textAlign: "center",
+  },
+  taskListContainer: {
+    flex: 1,
+    marginHorizontal: 20,
+    marginTop: 20,
+  },
+  listHeader: {
+    color: "#000",
+    fontSize: 18,
+    fontFamily: "Montserrat-Bold",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  emptyText: {
+    color: "#647c76",
+    fontSize: 15,
+    textAlign: "center",
+    marginVertical: 100,
+  },
+  noRoomText: {
+    fontFamily: "Montserrat-SemiBold",
+    color: "#647c76",
+    fontSize: 15,
+    textAlign: "center",
+    marginVertical: 200,
+    marginHorizontal: 60,
   },
 });

@@ -8,6 +8,7 @@ import {
   initializeNotifications,
 } from "./src/services/notifications";
 import { useFonts } from "expo-font";
+import { AuthProvider } from "./src/services/AuthContext";
 
 export default function App() {
   useEffect(() => {
@@ -29,10 +30,12 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <NavigationContainer>
-        <AppNavigator />
-        <StatusBar style="auto" />
-      </NavigationContainer>
+      <AuthProvider>
+        <NavigationContainer>
+          <AppNavigator />
+          <StatusBar style="auto" />
+        </NavigationContainer>
+      </AuthProvider>
     </View>
   );
 }

@@ -11,7 +11,7 @@ interface LoginResponse {
   refresh_token: string;
 }
 
-export const login = async (credentials: LoginCredentials): Promise<void> => {
+export const loginAPI = async (credentials: LoginCredentials): Promise<void> => {
   try {
     const response = await apiClient.post<LoginResponse>(
       "/api/auth/login",

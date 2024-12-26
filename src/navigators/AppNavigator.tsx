@@ -1,36 +1,26 @@
-import { View } from "react-native";
 import React, { useEffect, useState } from "react";
 import LoginScreen from "../screens/auth/LoginScreen";
 import { getToken, TOKEN_KEYS } from "../services/tokenStorage";
-import HomeStackNavigator from "./HomeStackNavigator";
 import { createStackNavigator } from "@react-navigation/stack";
+import HomeScreen from "../screens/main/HomeScreen";
+import TaskManagementScreen from "../screens/main/TaskManagementScreen";
+import { Task } from "../api/fetchTasksAPI";
+import { useAuth } from "../services/AuthContext";
 
 export type AppStackParamList = {
   Login: undefined;
-  Home: undefined; 
+  Home: undefined;
+  "Task Management": { taskDetails: Task };
 };
 
 const AppNavigator = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const {isLoggedIn, handleLogin} = useAuth();
   const Stack = createStackNavigator<AppStackParamList>();
 
-  const handleLogIn = async (): Promise<void> => {
-    const accessToken = await getToken(TOKEN_KEYS.ACCESS);
-    console.log("Access token:", accessToken);
-
-    if (!accessToken) {
-      setIsLoggedIn(false);
-      return;
-    }
-
-    setIsLoggedIn(true);
-    //validate expired tokens
-  };
 
   useEffect(() => {
-    handleLogIn();
-    return () => {};
-  }, [isLoggedIn]);
+    handleLogin();
+  }, [handleLogin]);
 
   return (
     <Stack.Navigator>
@@ -41,15 +31,20 @@ const AppNavigator = () => {
           options={{ headerShown: false }}
         />
       ) : (
-        <Stack.Screen
-          name="Home"
-          component={HomeStackNavigator}
-          options={{ headerShown: false }}
-        />
+        <>
+          <Stack.Screen
+            name="Home"
+            component={HomeScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Task Management"
+            component={TaskManagementScreen}
+          />
+        </>
       )}
     </Stack.Navigator>
   );
-  // <View style={{flex: 1}}>{!isLoggedIn ? <LoginScreen  /> : <HomeStackNavigator/>}</View>;
 };
 
 export default AppNavigator;
